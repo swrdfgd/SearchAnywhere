@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Anywhere</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+    h1 {
+        font-size: 3em;
+        margin-top: 50px;
+        color: #333;
+    }
+    h2 {
+        font-size: 2em;
+        color: #666;
+    }
+    .search-container {
+        margin-top: 50px;
+    }
+    input[type=text] {
+        padding: 15px;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 30px;
+        border: 2px solid #ccc;
+        font-size: 1.2em;
+        outline: none;
+    }
+    input[type=submit] {
+        padding: 15px 30px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 1.2em;
+        transition: background-color 0.3s ease;
+    }
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+    /* Responsif */
+    @media screen and (max-width: 600px) {
+        h1 {
+            font-size: 2.5em;
+        }
+        h2 {
+            font-size: 1.5em;
+        }
+        input[type=text] {
+            width: 90%;
+            max-width: 300px;
+            font-size: 1em;
+        }
+        input[type=submit] {
+            padding: 10px 20px;
+            font-size: 1em;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>🔍 Search Anywhere 🔍</h1>
+
+<div class="search-container">
+    <form action="#" method="get">
+        <input type="text" placeholder="Insert Keywords" name="search">
+        <br><br>
+        <input type="submit" value="Search">
+    </form>
+</div>
+
+<script>
+    // Fungsi untuk mengarahkan pencarian ke situs pencari secara acak
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var searchQuery = document.querySelector('input[name="search"]').value;
+        var searchEngineUrls = [
+            "https://www.google.com/search?q=",
+            "https://www.bing.com/search?q=",
+            "https://search.yahoo.com/search?p=",
+			"https://us.vestiairecollective.com/search/?q=",
+			"https://www.zappos.com/search?term=",
+			"https://komikzoid.id/manga?search=",
+			"https://cloudcompanions.com/?s=",
+			"https://electrongrad.ru//?s=",
+			"https://www.si.edu/search?edan_q=",
+			["https://search.southwest.com/s/search.html?query=", "Kiangko", "&collection=southwest-search"],
+			"https://www.mercurynews.com/?s=",
+			"https://www.google.ca/search?q=",
+			"https://www.edutopia.org/search?query=",
+			"https://cproah22.ru/course/search.php?search=",
+			"https://publicsearch.coe.int/#k=",
+			"https://www.netgear.com/search/?query=",
+			"https://www.llnl.gov/llnl_search/all/",
+			"https://www.samaritans.org/search/?query=",
+			"https://www.guess.com/us/en/search/?q=",
+			"https://www.qoo10.sg/s/?keyword=",
+			"https://www.bluradio.com/busqueda?q=",
+			"https://www.norwich.gov.uk/site_search/results/?q=",
+			"https://www.grouphiit.com/pages/search-results-page?q=",
+			"https://c-brentano-grundschule.de/suchergebnisse.html?keywords=",
+			"https://pic4you.ru/?s=",
+			"https://www.afisha.ru/search/?query=",
+			["https://www.kijiji.ca/b-canada/","Kianko","/k0l0?dc=true&sort=dateDesc"],
+			
+            // Tambahkan URL situs pencari lain di sini...
+        ];
+        var randomUrl = searchEngineUrls[Math.floor(Math.random() * searchEngineUrls.length)];
+		if (Array.isArray(randomUrl)){
+		var link = '';
+			for (var i = 0; i < randomUrl.length; i++){
+				if (randomUrl[i] == "Kiangko"){
+					link += encodeURIComponent(searchQuery);
+				}
+				else{
+					link += randomUrl[i];
+				}
+			}
+		}
+		else{
+        window.location.href = randomUrl + encodeURIComponent(searchQuery);
+		}
+    });
+</script>
+
+</body>
+</html>
