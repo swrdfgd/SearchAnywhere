@@ -4,87 +4,169 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Search Anywhere</title>
+
 <style>
     body {
         font-family: Arial, sans-serif;
-        background-color: #f7f7f7;
+        background: #f7f7f7;
         text-align: center;
         margin: 0;
         padding: 0;
     }
+
     h1 {
-        font-size: 3em;
         margin-top: 50px;
+        font-size: 2.8em;
         color: #333;
     }
-    h2 {
-        font-size: 2em;
-        color: #666;
-    }
+
     .search-container {
-        margin-top: 50px;
-    }
-    input[type=text] {
-        padding: 15px;
-        width: 80%;
-        max-width: 400px;
-        border-radius: 30px;
-        border: 2px solid #ccc;
-        font-size: 1.2em;
-        outline: none;
-    }
-    input[type=submit] {
-        padding: 15px 30px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 30px;
-        cursor: pointer;
-        font-size: 1.2em;
-        transition: background-color 0.3s ease;
-    }
-    input[type=submit]:hover {
-        background-color: #45a049;
+        margin-top: 40px;
     }
 
-    /* Responsif */
-    @media screen and (max-width: 600px) {
-        h1 {
-            font-size: 2.5em;
-        }
-        h2 {
-            font-size: 1.5em;
-        }
-        input[type=text] {
-            width: 90%;
-            max-width: 300px;
-            font-size: 1em;
-        }
-        input[type=submit] {
-            padding: 10px 20px;
-            font-size: 1em;
-        }
+    .input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 80%;
+        max-width: 420px;
+    }
+
+    input[type=text] {
+        width: 100%;
+        padding: 15px;
+        padding-right: 95px;
+        border-radius: 30px;
+        border: 2px solid #ccc;
+        font-size: 1.1em;
+        outline: none;
+    }
+
+    .icon-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2em;
+        opacity: 0.5;
+        display: none;
+    }
+
+    .icon-btn:hover {
+        opacity: 1;
+    }
+
+    #randomBtn { right: 45px; display: block; }
+    #clearBtn  { right: 15px; }
+
+    input[type=submit] {
+        margin-top: 20px;
+        padding: 14px 30px;
+        font-size: 1.1em;
+        border-radius: 30px;
+        border: none;
+        background: #4CAF50;
+        color: white;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background: #45a049;
+    }
+
+    .options {
+        margin-top: 15px;
+        font-size: 0.9em;
+        color: #555;
+    }
+
+    @media (max-width: 600px) {
+        h1 { font-size: 2.2em; }
     }
 </style>
 </head>
+
 <body>
 
-<h1>🔍 Search Anywhere 🔍</h1>
+<h1>🔍 Search Anywhere</h1>
 
 <div class="search-container">
-    <form action="#" method="get">
-        <input type="text" placeholder="Insert Keywords" name="search">
-        <br><br>
+    <form id="searchForm">
+
+        <div class="input-wrapper">
+            <input type="text" id="searchInput" placeholder="Insert keywords">
+            <button type="button" id="randomBtn" class="icon-btn" title="Random keyword">🎲</button>
+            <button type="button" id="clearBtn" class="icon-btn" title="Clear">❌</button>
+        </div>
+
+        <br>
         <input type="submit" value="Search">
+
+        <div class="options">
+            <label>
+                <input type="checkbox" id="newTabToggle" checked>
+                Open in new tab
+            </label>
+            &nbsp;|&nbsp;
+            <label>
+                <input type="checkbox" id="autoSearchToggle">
+                Auto-search after 🎲
+            </label>
+        </div>
+
     </form>
 </div>
 
 <script>
-    // Fungsi untuk mengarahkan pencarian ke situs pencari secara acak
-    document.querySelector('form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        var searchQuery = document.querySelector('input[name="search"]').value;
-        var searchEngineUrls = [
+/* ======================
+   ELEMENTS
+====================== */
+const searchInput = document.getElementById("searchInput");
+const clearBtn = document.getElementById("clearBtn");
+const randomBtn = document.getElementById("randomBtn");
+const newTabToggle = document.getElementById("newTabToggle");
+const autoSearchToggle = document.getElementById("autoSearchToggle");
+
+/* ======================
+   UI BEHAVIOR
+====================== */
+searchInput.addEventListener("input", () => {
+    clearBtn.style.display = searchInput.value ? "block" : "none";
+});
+
+clearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    clearBtn.style.display = "none";
+    searchInput.focus();
+});
+
+/* ======================
+   RANDOM KEYWORD
+====================== */
+randomBtn.addEventListener("click", () => {
+    searchInput.value = generateRandomKeyword();
+    clearBtn.style.display = "block";
+    searchInput.focus();
+
+    if (autoSearchToggle.checked) {
+        runSearch();
+    }
+});
+
+// 🔧 GANTI ISI FUNGSI INI SESUAI GENERATORMU
+function generateRandomKeyword() {
+    return "random keyword";
+}
+
+/* ======================
+   SEARCH LOGIC
+====================== */
+function runSearch() {
+    const query = searchInput.value.trim();
+    if (!query) return;
+
+    const searchEngines = [
 		"https://www.westernaustralia.com/en/pages/search?keywords=",
 		"https://www.mientrenadorpersonalonline.com/?s=",
 		"https://www.chef.io/search?q=",
@@ -187,23 +269,41 @@
 			"https://www.zshare.net/?s=",
 			
             // Tambahkan URL situs pencari lain di sini...
-        ];
-        var randomUrl = searchEngineUrls[Math.floor(Math.random() * searchEngineUrls.length)];
-		if (Array.isArray(randomUrl)){
-		var link = '';
-			for (var i = 0; i < randomUrl.length; i++){
-				if (randomUrl[i] == "Kiangko"){
-					link += encodeURIComponent(searchQuery);
-				}
-				else{
-					link += randomUrl[i];
-				}
-			}
-		}
-		else{
-        window.location.href = randomUrl + encodeURIComponent(searchQuery);
-		}
-    });
+    ];
+
+    const selected = searchEngines[Math.floor(Math.random() * searchEngines.length)];
+    let url = "";
+
+    if (Array.isArray(selected)) {
+        selected.forEach(p => {
+            url += p === "Kiangko" ? encodeURIComponent(query) : p;
+        });
+    } else {
+        url = selected + encodeURIComponent(query);
+    }
+
+    if (newTabToggle.checked) {
+        window.open(url, "_blank");
+    } else {
+        window.location.href = url;
+    }
+}
+
+/* ======================
+   FORM & SHORTCUTS
+====================== */
+document.getElementById("searchForm").addEventListener("submit", e => {
+    e.preventDefault();
+    runSearch();
+});
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") clearBtn.click();
+    if (e.ctrlKey && e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        randomBtn.click();
+    }
+});
 </script>
 
 </body>
