@@ -3,42 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Search Anywhere</title>
 
+<!-- Required libraries -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
+<!-- Optional script from random word.html for the fallback font engine[cite: 2] -->
+<script src="fontWordEngine.js"></script>
+
 <style>
+    /* =========================================
+       TANABE THEME & RESPONSIVENESS
+    ========================================= */
+    :root {
+        --tanabe-bg: #f5f3ef;       /* Warm paper/cream background */
+        --tanabe-card: #ffffff;     /* Search box background */
+        --tanabe-text: #2d2d2a;     /* Dark gray text */
+        --tanabe-primary: #5c6e46;  /* Earthy green / tea leaf */
+        --tanabe-hover: #4a5938;    /* Darker green for hover */
+        --tanabe-accent: #c48b59;   /* Orange/terracotta accent */
+        --tanabe-border: #dcd7ce;
+        --tanabe-shadow: rgba(45, 45, 42, 0.08);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
     body {
-        font-family: Arial, sans-serif;
-        background: #f7f7f7;
-        text-align: center;
+        font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+        background: var(--tanabe-bg);
+        color: var(--tanabe-text);
         margin: 0;
         padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
     }
 
     h1 {
-        margin-top: 50px;
-        font-size: 2.8em;
-        color: #333;
+        margin-top: 10vh;
+        font-size: clamp(2rem, 5vw, 3rem);
+        color: var(--tanabe-primary);
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        text-align: center;
     }
 
     .search-container {
-        margin-top: 40px;
+        width: 90%;
+        max-width: 600px;
+        background: var(--tanabe-card);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px var(--tanabe-shadow);
+        margin-top: 20px;
+    }
+
+    #searchForm {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
     }
 
     .input-wrapper {
         position: relative;
-        display: inline-block;
-        width: 80%;
-        max-width: 420px;
+        width: 100%;
+        margin-bottom: 20px;
     }
 
     input[type=text] {
         width: 100%;
-        padding: 15px;
-        padding-right: 95px;
-        border-radius: 30px;
-        border: 2px solid #ccc;
+        padding: 16px 110px 16px 20px; /* Space for 2 icon buttons */
+        border-radius: 12px;
+        border: 2px solid var(--tanabe-border);
         font-size: 1.1em;
         outline: none;
+        background: #faf9f7;
+        color: var(--tanabe-text);
+        transition: all 0.3s ease;
+    }
+
+    input[type=text]:focus {
+        border-color: var(--tanabe-primary);
+        box-shadow: 0 0 0 4px rgba(92, 110, 70, 0.1);
     }
 
     .icon-btn {
@@ -48,41 +99,79 @@
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 1.2em;
-        opacity: 0.5;
-        display: none;
+        font-size: 1.4em;
+        color: var(--tanabe-text);
+        opacity: 0.4;
+        transition: opacity 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 0 10px;
     }
 
     .icon-btn:hover {
         opacity: 1;
     }
 
-    #randomBtn { right: 45px; display: block; }
-    #clearBtn  { right: 15px; }
+    #randomBtn { right: 45px; }
+    #clearBtn  { right: 10px; display: none; }
 
     input[type=submit] {
-        margin-top: 20px;
-        padding: 14px 30px;
+        width: 100%;
+        padding: 15px;
         font-size: 1.1em;
-        border-radius: 30px;
+        font-weight: 600;
+        border-radius: 12px;
         border: none;
-        background: #4CAF50;
+        background: var(--tanabe-primary);
         color: white;
         cursor: pointer;
+        transition: background 0.3s ease, transform 0.1s;
     }
 
     input[type=submit]:hover {
-        background: #45a049;
+        background: var(--tanabe-hover);
+    }
+    
+    input[type=submit]:active {
+        transform: scale(0.98);
     }
 
     .options {
-        margin-top: 15px;
-        font-size: 0.9em;
-        color: #555;
+        margin-top: 20px;
+        font-size: 0.95em;
+        color: #666;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
-    @media (max-width: 600px) {
-        h1 { font-size: 2.2em; }
+    .options label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .options input[type=checkbox] {
+        accent-color: var(--tanabe-primary);
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+        .search-container {
+            padding: 20px;
+        }
+        .options {
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
     }
 </style>
 </head>
@@ -95,12 +184,11 @@
     <form id="searchForm">
 
         <div class="input-wrapper">
-            <input type="text" id="searchInput" placeholder="Insert keywords">
-            <button type="button" id="randomBtn" class="icon-btn" title="Random keyword">🎲</button>
-            <button type="button" id="clearBtn" class="icon-btn" title="Clear">❌</button>
+            <input type="text" id="searchInput" placeholder="Insert keywords...">
+            <button type="button" id="randomBtn" class="icon-btn" title="Random keyword (Ctrl+R)">🎲</button>
+            <button type="button" id="clearBtn" class="icon-btn" title="Clear (Esc)">❌</button>
         </div>
 
-        <br>
         <input type="submit" value="Search">
 
         <div class="options">
@@ -108,7 +196,6 @@
                 <input type="checkbox" id="newTabToggle" checked>
                 Open in new tab
             </label>
-            &nbsp;|&nbsp;
             <label>
                 <input type="checkbox" id="autoSearchToggle">
                 Auto-search after 🎲
@@ -119,8 +206,193 @@
 </div>
 
 <script>
+/* ======================================================
+   GLOBAL SITE LISTS (LOADED ONCE)[cite: 2]
+====================================================== */
+let WIKTIONARY_SITES = [];
+let WIKIPEDIA_SITES = [];
+
+function fetchWithTimeout(url, ms = 6000){
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) => setTimeout(() => reject("timeout"), ms))
+  ]);
+}
+
+async function fetchJSON(url){
+  const r = await fetchWithTimeout(url);
+  return r.json();
+}
+
+async function loadWikimediaSites(){
+  const data = await fetchJSON("https://meta.wikimedia.org/w/api.php?action=sitematrix&format=json&origin=*");
+  const matrix = data.sitematrix;
+
+  for(const key in matrix){
+    if(key === "count") continue;
+    const block = matrix[key];
+    if(!block.site || !block.code) continue;
+
+    const lang = block.code;
+    block.site.forEach(site=>{
+      if(site.closed || site.private) return;
+      if(site.code === "wiktionary") WIKTIONARY_SITES.push(lang);
+      if(site.code === "wiki") WIKIPEDIA_SITES.push(lang);
+    });
+  }
+}
+
+/* =========================================
+   TITLE CLEANER CONFIG[cite: 2]
+========================================= */
+const FORBIDDEN_PREFIXES = [
+  "user", "User", "template", "talk", "wikipedia", "wiktionary", "file", 
+  "category", "help", "portal", "module", "modules", "Module", "Modules", 
+  "mediawiki", "special", "draft", "book", "media", "image", "User talk", 
+  "Template", "Talk", "benotzer", "benutzer", "benutzerin", "diskussion", 
+  "vorlage", "usuario", "utilisateur", "modèle", "categoria", "участник", 
+  "шаблон", "ithemplethi", "wiksyunaryo", "project", "thread", "comment",
+  "Dalībnieka diskusija", "सदस्य", "Kategorie", "زٲژ", "Samfuri", "Модуль", 
+  "모듈", "𐌽𐌹𐌿𐍄𐌰𐌽𐌳𐍃", "幫助", "Ikiyago c'uwukoresha", "विक्शनरी", "Pamaké", 
+  "དཔེ་པང་།", "ᥗᥦᥛᥰ ᥙᥣ ᥘᥥᥐᥳ", "টেমপ্লেট", "Utilisader discussiun", "Dyskusja", 
+  "Индекс", "Категорие", "Шаблон", "ⴰⵎⵙⴳⴷⴰⵍ ⵏ ⵓⵏⵙⵙⵎⵔⵙ"
+];
+
+function cleanTitle(title){
+  if(!title) return title;
+  let t = title.trim();
+
+  while(true){
+    const colonIndex = t.indexOf(":");
+    if(colonIndex === -1) break;
+    const prefix = t.slice(0, colonIndex);
+    if(FORBIDDEN_PREFIXES.includes(prefix)){
+      t = t.slice(colonIndex + 1).trim();
+    } else {
+      break; 
+    }
+  }
+
+  if(!/^wiki$/i.test(t)) t = t.replace(/\s+wiki$/i, "");
+  if(!/^Wiki$/i.test(t)) t = t.replace(/\s+Wiki$/i, "");
+
+  return t.trim();
+}
+
+/* ======================================================
+   WORD SOURCES (IDENTICAL TO RANDOM WORD ALGORITHM)[cite: 2]
+====================================================== */
+async function randomFromWiktionary(){
+  const lang = WIKTIONARY_SITES[Math.floor(Math.random() * WIKTIONARY_SITES.length)];
+  const data = await fetchJSON(`https://${lang}.wiktionary.org/w/api.php?action=query&list=random&rnlimit=1&format=json&origin=*`);
+  return { word: cleanTitle(data.query.random[0].title), source: `Wiktionary (${lang})`, isFontGenerated: false };
+}
+
+async function randomFromWikipedia(){
+  const lang = WIKIPEDIA_SITES[Math.floor(Math.random() * WIKIPEDIA_SITES.length)];
+  const data = await fetchJSON(`https://${lang}.wikipedia.org/w/api.php?action=query&list=random&rnlimit=1&format=json&origin=*`);
+  return { word: cleanTitle(data.query.random[0].title), source: `Wikipedia (${lang})`, isFontGenerated: false };
+}
+
+const FANDOM_FILE_COUNT = 3234;
+function randomFromFandom(){
+  return new Promise((resolve, reject)=>{
+    const fileIndex = Math.floor(Math.random() * FANDOM_FILE_COUNT) + 1;
+    const fileUrl = `https://cdn.jsdelivr.net/gh/swrdfgd/RandomWords2/fandom/fandom_${fileIndex}.txt`;
+
+    $.get(fileUrl).done(txt => {
+        const lines = txt.split("\n").map(l => l.trim()).filter(Boolean);
+        if(!lines.length) return reject("empty fandom file");
+        const line = lines[Math.floor(Math.random() * lines.length)];
+        const lastComma = line.lastIndexOf(",");
+        if(lastComma === -1) return reject("invalid line");
+
+        let wikiUrl = line.slice(lastComma + 1).trim();
+        wikiUrl = wikiUrl.replace(/\/+$/, "").replace("http://", "https://");
+
+        const api = `${wikiUrl}/api.php?origin=*&action=query&format=json&list=random&rnlimit=1&rnnamespace=0`;
+        $.getJSON(api).done(data=>{
+            const title = data?.query?.random?.[0]?.title;
+            if(!title) return reject("no article");
+            resolve({ word: cleanTitle(title), source: `Fandom`, isFontGenerated: false });
+          }).fail(()=>reject("article api failed"));
+      }).fail(()=>reject("fandom txt failed"));
+  });
+}
+
+const WORDLIST_FILE_COUNT = 424;
+const MOREWORDS_FILE_COUNT = 1100;
+const MOREWORDS2_FILE_COUNT = 200;
+
+function randomFromWordlist(){
+  return new Promise((resolve, reject)=>{
+    let fileIndex, fileUrl;
+	if (Math.random() < 1/3){
+		fileIndex = Math.floor(Math.random() * WORDLIST_FILE_COUNT) + 1;
+		fileUrl = `https://cdn.jsdelivr.net/gh/swrdfgd/RandomWords2/wordlist/wordlist_${fileIndex}.txt`;
+	} else if (Math.random() < 1/2){
+		fileIndex = Math.floor(Math.random() * MOREWORDS_FILE_COUNT) + 1;
+		fileUrl = `https://cdn.jsdelivr.net/gh/swrdfgd/RandomWords2/morewords/items_${fileIndex}.txt`;		
+	} else {
+		fileIndex = Math.floor(Math.random() * MOREWORDS2_FILE_COUNT) + 1;
+		fileUrl = `https://cdn.jsdelivr.net/gh/swrdfgd/RandomWords2/morewords2/names_${fileIndex}.txt`;	
+	}
+
+    $.get(fileUrl).done(txt => {
+        const lines = txt.split("\n").map(l => l.trim()).filter(Boolean);
+        if(!lines.length) return reject("empty wordlist file");
+        const line = lines[Math.floor(Math.random() * lines.length)];
+		resolve({ word: line, source: `wordlist`, isFontGenerated: false });
+      }).fail(()=>reject("wordlist txt failed"));
+  });
+}
+
+function fallbackWord(){
+  const chars = "abcdefghijklmnopqrstuvwxyz";
+  let len = Math.floor(Math.random()*8)+3;
+  let w = "";
+  for(let i=0;i<len;i++){ w += chars[Math.floor(Math.random()*chars.length)]; }
+  return { word: w, source: "Fallback Generator" };
+}
+
+/* ======================================================
+   SELECTOR (TRY PER STAGE)[cite: 2]
+====================================================== */
+async function generateWord(){
+  if(Math.random() < 0.5){
+    try{ return await randomFromWiktionary(); } catch(e){ console.warn("Wiktionary failed"); }
+  }
+  if(Math.random() < 0.5){
+    try{ return await randomFromWikipedia(); } catch(e){ console.warn("Wikipedia failed"); }
+  }
+  if(Math.random() < 0.5){
+    try{ return await randomFromFandom(); } catch(e){ console.warn("Fandom failed"); }
+  }
+  if(Math.random() < 0.5){
+    try{ return await randomFromWordlist(); } catch(e){ console.warn("Wordlist failed"); }
+  }
+  try{ 
+      if(typeof randomWordFromFont === "function") return await randomWordFromFont(); 
+  } catch(e){ console.warn("Font engine failed"); }
+  
+  return fallbackWord();
+}
+
+/* ======================================================
+   OLD KEYWORD ALGORITHM (Search Anywhere)
+====================================================== */
+async function generateRandomKeyword() {
+	var kata = await generateWord();
+	var kataKunci = await kata["word"];
+	while (Math.random() < 0.5){
+	  kata = await generateWord();
+	  kataKunci += ' ' + await kata["word"];
+	}
+    return kataKunci;
+}
+
 /* ======================
-   ELEMENTS
+   ELEMENTS & UI BEHAVIOR[cite: 1]
 ====================== */
 const searchInput = document.getElementById("searchInput");
 const clearBtn = document.getElementById("clearBtn");
@@ -128,11 +400,8 @@ const randomBtn = document.getElementById("randomBtn");
 const newTabToggle = document.getElementById("newTabToggle");
 const autoSearchToggle = document.getElementById("autoSearchToggle");
 
-/* ======================
-   UI BEHAVIOR
-====================== */
 searchInput.addEventListener("input", () => {
-    clearBtn.style.display = searchInput.value ? "block" : "none";
+    clearBtn.style.display = searchInput.value ? "flex" : "none";
 });
 
 clearBtn.addEventListener("click", () => {
@@ -141,26 +410,28 @@ clearBtn.addEventListener("click", () => {
     searchInput.focus();
 });
 
-/* ======================
-   RANDOM KEYWORD
-====================== */
-randomBtn.addEventListener("click", () => {
-    searchInput.value = generateRandomKeyword();
-    clearBtn.style.display = "block";
+randomBtn.addEventListener("click", async () => {
+    // Provide a brief visual loading indicator
+    searchInput.value = "Fetching words..."; 
+    randomBtn.style.pointerEvents = "none";
+    randomBtn.style.opacity = "0.5";
+    
+    try {
+        searchInput.value = await generateRandomKeyword();
+    } catch(e) {
+        searchInput.value = fallbackWord().word;
+    }
+    
+    clearBtn.style.display = "flex";
+    randomBtn.style.pointerEvents = "auto";
+    randomBtn.style.opacity = "1";
     searchInput.focus();
 
-    if (autoSearchToggle.checked) {
-        runSearch();
-    }
+    if (autoSearchToggle.checked) runSearch();
 });
 
-// 🔧 GANTI ISI FUNGSI INI SESUAI GENERATORMU
-function generateRandomKeyword() {
-    return "random keyword";
-}
-
 /* ======================
-   SEARCH LOGIC
+   SEARCH LOGIC[cite: 1]
 ====================== */
 function runSearch() {
     const query = searchInput.value.trim();
@@ -211,73 +482,68 @@ function runSearch() {
 		"https://en.wikipedia.org/wiki/Special:Search?go=Go&search=",
 		"https://www.ecologiaverde.com/busqueda?q=",
 		"https://skiim-paris.com/search?q=",
-			"https://health.mil/Search-Results?query=",
-			"https://fineartamerica.com/art/",
-            "https://www.google.com/search?q=",
-			"https://us.vestiairecollective.com/search/?q=",
-			"https://www.zappos.com/search?term=",
-			"https://komikzoid.id/manga?search=",
-			"https://cloudcompanions.com/?s=",
-			"https://electrongrad.ru//?s=",
-			"https://www.si.edu/search?edan_q=",
-			["https://search.southwest.com/s/search.html?query=", "Kiangko", "&collection=southwest-search"],
-			"https://www.mercurynews.com/?s=",
-			"https://www.google.ca/search?q=",
-			"https://www.edutopia.org/search?query=",
-			"https://cproah22.ru/course/search.php?search=",
-			"https://publicsearch.coe.int/#k=",
-			"https://www.netgear.com/search/?query=",
-			"https://www.llnl.gov/llnl_search/all/",
-			"https://www.samaritans.org/search/?query=",
-			"https://www.guess.com/us/en/search/?q=",
-			"https://www.qoo10.sg/s/?keyword=",
-			"https://www.bluradio.com/busqueda?q=",
-			"https://www.norwich.gov.uk/site_search/results/?q=",
-			"https://www.grouphiit.com/pages/search-results-page?q=",
-			"https://c-brentano-grundschule.de/suchergebnisse.html?keywords=",
-			"https://pic4you.ru/?s=",
-			"https://www.afisha.ru/search/?query=",
-			["https://www.kijiji.ca/b-canada/","Kianko","/k0l0?dc=true&sort=dateDesc"],
-			"https://www.thomann.de/intl/search_dir.html?sw=",
-			"https://www.twitch.tv/search?term=",
-			"https://www.pewresearch.org/search/",
-			"https://www.interiorjunkie.com/?s=",
-			"https://butlerradio.com/?s=",
-			"https://www.kingkongnation.com/search?q=",
-			"https://www.rtve.es/buscador?q=",
-			"https://www.airplane-pictures.net/search.php?p=",
-			"https://ozon.kz/search/?bound_cleaned=true&from_global=true&text=",
-			"https://webdeldocente.com/?s=",
-			"https://ya.ru/search/?text=",
-			"https://www.artstation.com/search?sort_by=relevance&query=",
-			"https://www.dc.com/search?q=",
-			"https://www.amd.com/en/search/site-search.html#q=",
-			"https://cyclingreview.net/?s=",
-			"https://kumparan.com/search/",
-			"https://www.mohawkgroup.com/?query=",
-			"https://www.mother.ly/?s=",
-			"https://www.halobdg.com/?s=",
-			"https://www.islandconservation.org/?s=",
-			"https://www.lego.com/en-id/search?q=",
-			"https://www.spectrababyusa.com/?s=",
-			"https://miltex.by/search/?q=",
-			"https://www.fbcinc.com/sitesearch.aspx?t=n&p=",
-			"https://www.uutisvuoksi.fi/haku/?q=",
-			"https://www.fwi.co.uk/search?keyword=",
-			"https://www.svd.se/sok?q=",
-			"https://www.siemens.com/global/en/search.html?q=",
-			"https://www.zshare.net/?s=",
-			
-            // Tambahkan URL situs pencari lain di sini...
+        "https://health.mil/Search-Results?query=",
+        "https://fineartamerica.com/art/",
+        "https://www.google.com/search?q=",
+        "https://us.vestiairecollective.com/search/?q=",
+        "https://www.zappos.com/search?term=",
+        "https://komikzoid.id/manga?search=",
+        "https://cloudcompanions.com/?s=",
+        "https://electrongrad.ru//?s=",
+        "https://www.si.edu/search?edan_q=",
+        ["https://search.southwest.com/s/search.html?query=", "Kiangko", "&collection=southwest-search"],
+        "https://www.mercurynews.com/?s=",
+        "https://www.google.ca/search?q=",
+        "https://www.edutopia.org/search?query=",
+        "https://cproah22.ru/course/search.php?search=",
+        "https://publicsearch.coe.int/#k=",
+        "https://www.netgear.com/search/?query=",
+        "https://www.llnl.gov/llnl_search/all/",
+        "https://www.samaritans.org/search/?query=",
+        "https://www.guess.com/us/en/search/?q=",
+        "https://www.qoo10.sg/s/?keyword=",
+        "https://www.bluradio.com/busqueda?q=",
+        "https://www.norwich.gov.uk/site_search/results/?q=",
+        "https://www.grouphiit.com/pages/search-results-page?q=",
+        "https://c-brentano-grundschule.de/suchergebnisse.html?keywords=",
+        "https://pic4you.ru/?s=",
+        "https://www.afisha.ru/search/?query=",
+        ["https://www.kijiji.ca/b-canada/","Kianko","/k0l0?dc=true&sort=dateDesc"],
+        "https://www.thomann.de/intl/search_dir.html?sw=",
+        "https://www.twitch.tv/search?term=",
+        "https://www.interiorjunkie.com/?s=",
+        "https://butlerradio.com/?s=",
+        "https://www.kingkongnation.com/search?q=",
+        "https://www.rtve.es/buscador?q=",
+        "https://www.airplane-pictures.net/search.php?p=",
+        "https://ozon.kz/search/?bound_cleaned=true&from_global=true&text=",
+        "https://webdeldocente.com/?s=",
+        "https://ya.ru/search/?text=",
+        "https://www.artstation.com/search?sort_by=relevance&query=",
+        "https://www.dc.com/search?q=",
+        "https://www.amd.com/en/search/site-search.html#q=",
+        "https://cyclingreview.net/?s=",
+        "https://kumparan.com/search/",
+        "https://www.mohawkgroup.com/?query=",
+        "https://www.mother.ly/?s=",
+        "https://www.halobdg.com/?s=",
+        "https://www.islandconservation.org/?s=",
+        "https://www.lego.com/en-id/search?q=",
+        "https://www.spectrababyusa.com/?s=",
+        "https://miltex.by/search/?q=",
+        "https://www.fbcinc.com/sitesearch.aspx?t=n&p=",
+        "https://www.uutisvuoksi.fi/haku/?q=",
+        "https://www.fwi.co.uk/search?keyword=",
+        "https://www.svd.se/sok?q=",
+        "https://www.siemens.com/global/en/search.html?q=",
+        "https://www.zshare.net/?s="
     ];
 
     const selected = searchEngines[Math.floor(Math.random() * searchEngines.length)];
     let url = "";
 
     if (Array.isArray(selected)) {
-        selected.forEach(p => {
-            url += p === "Kiangko" ? encodeURIComponent(query) : p;
-        });
+        selected.forEach(p => { url += p === "Kiangko" || p === "Kianko" ? encodeURIComponent(query) : p; });
     } else {
         url = selected + encodeURIComponent(query);
     }
@@ -290,7 +556,7 @@ function runSearch() {
 }
 
 /* ======================
-   FORM & SHORTCUTS
+   FORM & SHORTCUTS[cite: 1]
 ====================== */
 document.getElementById("searchForm").addEventListener("submit", e => {
     e.preventDefault();
@@ -304,7 +570,19 @@ document.addEventListener("keydown", e => {
         randomBtn.click();
     }
 });
+
+/* ======================================================
+   INIT (LOAD ONCE)[cite: 2]
+====================================================== */
+(async()=>{
+  try{
+    await loadWikimediaSites();
+  }catch(e){
+    console.warn("Sitematrix failed — using fallback only");
+  }
+})();
 </script>
 
 </body>
+</html>
 </html>
